@@ -1,0 +1,5 @@
+{
+	"name": "ct",
+	"version": "0.1.0",
+	"description": "Container types for Quadrate (Vec, HashMap, Set, Queue, Deque)"
+}
