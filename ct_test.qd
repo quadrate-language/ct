@@ -96,3 +96,44 @@ test "Pair basic" {
 	p @first 42 testing::assert_eq
 	p @second "hello" testing::assert_eq
 }
+
+test "Vec growth" {
+	Vec<i64> { data = 0 len = 0 cap = 0 } -> v
+	// Initial capacity is 0
+	v capacity 0 testing::assert_eq
+	// Push 20 elements to trigger growth
+	0 20 1 for i {
+		v i push! -> v
+	}
+	v length 20 testing::assert_eq
+	// Capacity should have grown
+	v capacity 20 >= testing::assert_true
+	// Verify all values
+	0 20 1 for i {
+		v i get! i testing::assert_eq
+	}
+	v release
+}
+
+test "HashMap contains" {
+	HashMap<i64> { keys = 0 values = 0 states = 0 len = 0 cap = 0 } -> m
+	m "foo" 1 insert! -> m
+	m "bar" 2 insert! -> m
+	m "foo" contains testing::assert_true
+	m "bar" contains testing::assert_true
+	m "baz" contains testing::assert_false
+	m release
+}
+
+test "Set operations" {
+	Set { keys = 0 states = 0 len = 0 cap = 0 } -> s
+	s "a" add! -> s
+	s "b" add! -> s
+	s "c" add! -> s
+	s length 3 testing::assert_eq
+	s "b" remove! -> s
+	s length 2 testing::assert_eq
+	s "b" contains testing::assert_false
+	s "a" contains testing::assert_true
+	s release
+}
