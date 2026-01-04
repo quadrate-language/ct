@@ -1,0 +1,98 @@
+// Unit tests for the ct (container types) module
+use ct
+use testing
+
+test "Vec push and get" {
+	Vec<i64> { data = 0 len = 0 cap = 0 } -> v
+	v 10 push! -> v
+	v 20 push! -> v
+	v 30 push! -> v
+	v 0 get! 10 testing::assert_eq
+	v 1 get! 20 testing::assert_eq
+	v 2 get! 30 testing::assert_eq
+	v release
+}
+
+test "Vec length" {
+	Vec<i64> { data = 0 len = 0 cap = 0 } -> v
+	v length 0 testing::assert_eq
+	v 10 push! -> v
+	v length 1 testing::assert_eq
+	v 20 push! -> v
+	v length 2 testing::assert_eq
+	v release
+}
+
+test "Vec pop" {
+	Vec<i64> { data = 0 len = 0 cap = 0 } -> v
+	v 10 push! -> v
+	v 20 push! -> v
+	v 30 push! -> v
+	v pop! -> v -> popped
+	popped 30 testing::assert_eq
+	v length 2 testing::assert_eq
+	v release
+}
+
+test "Vec set" {
+	Vec<i64> { data = 0 len = 0 cap = 0 } -> v
+	v 10 push! -> v
+	v 20 push! -> v
+	v 0 100 set! -> v
+	v 0 get! 100 testing::assert_eq
+	v 1 get! 20 testing::assert_eq
+	v release
+}
+
+test "Vec is_empty" {
+	Vec<i64> { data = 0 len = 0 cap = 0 } -> v
+	v is_empty testing::assert_true
+	v 10 push! -> v
+	v is_empty testing::assert_false
+	v release
+}
+
+test "Deque basic" {
+	Deque<i64> { data = 0 len = 0 cap = 0 head = 0 tail = 0 } -> d
+	d 10 push_back! -> d
+	d 20 push_back! -> d
+	d length 2 testing::assert_eq
+	d release
+}
+
+test "Queue basic" {
+	Queue<i64> { data = 0 len = 0 cap = 0 head = 0 tail = 0 } -> q
+	q 10 enqueue! -> q
+	q 20 enqueue! -> q
+	q dequeue! -> q -> val
+	val 10 testing::assert_eq
+	q dequeue! -> q -> val
+	val 20 testing::assert_eq
+	q release
+}
+
+test "HashMap basic" {
+	HashMap<i64> { keys = 0 values = 0 states = 0 len = 0 cap = 0 } -> m
+	m "one" 1 insert! -> m
+	m "two" 2 insert! -> m
+	m "one" get! 1 testing::assert_eq
+	m "two" get! 2 testing::assert_eq
+	m release
+}
+
+test "Set basic" {
+	Set { keys = 0 states = 0 len = 0 cap = 0 } -> s
+	s "alice" add! -> s
+	s "bob" add! -> s
+	s "alice" add! -> s  // duplicate
+	s length 2 testing::assert_eq
+	s "alice" contains testing::assert_true
+	s "charlie" contains testing::assert_false
+	s release
+}
+
+test "Pair basic" {
+	Pair<i64, str> { first = 42 second = "hello" } -> p
+	p @first 42 testing::assert_eq
+	p @second "hello" testing::assert_eq
+}
