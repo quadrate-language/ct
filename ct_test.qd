@@ -137,3 +137,119 @@ test "Set operations" {
 	s "a" contains testing::assert_true
 	s release
 }
+
+test "HashMap collision handling" {
+	HashMap<i64> { keys = 0 values = 0 states = 0 len = 0 cap = 0 } -> m
+
+	m "a" 1 insert! -> m
+	m "b" 2 insert! -> m
+	m "c" 3 insert! -> m
+	m "d" 4 insert! -> m
+	m "e" 5 insert! -> m
+
+	m length 5 testing::assert_eq
+
+	// Remove middle items (creates tombstones)
+	m "b" remove! -> m
+	m "d" remove! -> m
+	m length 3 testing::assert_eq
+
+	// Verify remaining items
+	m "a" get! 1 testing::assert_eq
+	m "c" get! 3 testing::assert_eq
+	m "e" get! 5 testing::assert_eq
+
+	// Insert new items (should reuse tombstone slots)
+	m "f" 6 insert! -> m
+	m "g" 7 insert! -> m
+	m length 5 testing::assert_eq
+
+	// Verify all items
+	m "a" get! 1 testing::assert_eq
+	m "c" get! 3 testing::assert_eq
+	m "e" get! 5 testing::assert_eq
+	m "f" get! 6 testing::assert_eq
+	m "g" get! 7 testing::assert_eq
+
+	// Verify removed items not found
+	m "b" has testing::assert_false
+	m "d" has testing::assert_false
+
+	m release
+}
+
+test "Vec stress" {
+	Vec<i64> { data = 0 len = 0 cap = 0 } -> v
+
+	// Push 100 elements
+	0 100 1 for i {
+		v i push! -> v
+	}
+	v length 100 testing::assert_eq
+
+	// Verify some values
+	v 0 get! 0 testing::assert_eq
+	v 50 get! 50 testing::assert_eq
+	v 99 get! 99 testing::assert_eq
+
+	// Pop 50 elements
+	0 50 1 for i {
+		v pop! -> v drop
+	}
+	v length 50 testing::assert_eq
+
+	// Set some values
+	0 10 1 for i {
+		v i 1000 i + set! -> v
+	}
+	v 5 get! 1005 testing::assert_eq
+
+	// Reset and verify
+	v reset -> v
+	v length 0 testing::assert_eq
+	v capacity 0 > testing::assert_true
+
+	// Push more after reset
+	v 42 push! -> v
+	v 0 get! 42 testing::assert_eq
+
+	v release
+}
+
+test "Vec pop all" {
+	Vec<i64> { data = 0 len = 0 cap = 0 } -> v
+
+	// Push some elements
+	v 1 push! -> v
+	v 2 push! -> v
+	v 3 push! -> v
+
+	// Pop all
+	v pop! -> v -> val
+	val 3 testing::assert_eq
+	v pop! -> v -> val
+	val 2 testing::assert_eq
+	v pop! -> v -> val
+	val 1 testing::assert_eq
+
+	v length 0 testing::assert_eq
+	v is_empty testing::assert_true
+
+	v release
+}
+
+test "HashMap update existing" {
+	HashMap<i64> { keys = 0 values = 0 states = 0 len = 0 cap = 0 } -> m
+
+	m "key" 100 insert! -> m
+	m "key" get! 100 testing::assert_eq
+
+	// Update with same key
+	m "key" 200 insert! -> m
+	m "key" get! 200 testing::assert_eq
+
+	// Length should still be 1
+	m length 1 testing::assert_eq
+
+	m release
+}
